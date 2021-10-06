@@ -1,6 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
+import { LocationGeofencingEventType } from 'expo-location';
 
 export default function App() {
   const [latitude, setLatitude] = useState(0);
@@ -9,13 +10,17 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      const reply = await Location.requestForegroundPermissionsAsync();
-      if (reply.granted) {
-        const location = await Location.getCurrentPositionAsync({});
-        setLatitude(location.coords.latitude);
-        setLongitude(location.coords.longitude);
+      let {status} = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
         setIsLoading(false);
+        console.log("Geolocation failed.");
+        return;
       }
+  
+      const location = await Location.getCurrentPositionAsync({accuracy: Location.Accuracy.Lowest});
+      setLatitude(location.coords.latitude);
+      setLongitude(location.coords.longitude);
+      setIsLoading(false);      
     })();
   }, [])
 
